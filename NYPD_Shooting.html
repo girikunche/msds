@@ -170,10 +170,24 @@ pre code {
 
 </div>
 
+<div id="TOC">
+<ul>
+<li><a href="#project-description">Project Description</a></li>
+<li><a href="#load-libraries">Load Libraries</a></li>
+<li><a href="#downloading-data">Downloading Data</a></li>
+<li><a href="#data-analysis">Data Analysis</a></li>
+<li><a href="#summarizing-data">Summarizing Data</a></li>
+<li><a href="#visualization">Visualization</a></li>
+<li><a href="#modelling">Modelling</a></li>
+<li><a href="#bias">Bias</a></li>
+</ul>
+</div>
 
 <div id="project-description" class="section level2">
 <h2>Project Description</h2>
-<p>This is an R Markdown document for the Analysis of NYC Shooting Incident data. The shooting incident data was downloaded from <a href="https://data.cityofnewyork.us" class="uri">https://data.cityofnewyork.us</a></p>
+<p>Gun violence continues to be one of the major issues in United States. Gun Violence has resulted in tens of thousands of deaths and injuries very year. I have done the analysis of shootings in New York City which is one of the largest cities in United States. The analysis is based on the data provided by NYC Open Data :<a href="https://data.cityofnewyork.us" class="uri">https://data.cityofnewyork.us</a> .</p>
+<p>The data set contains breakdown of every shooting incident that occured in NYC going back to 2006 through the end of 2020. Each record represents a shooting event and includes information about the event like the location, date and time of occurrence, borough where the shooting incident occurred, precinct where the shooting incident occurred, juridiction code, location , preperator’s age group,sex and race, victim’s sex, age and race , longitude and latitude of the location.</p>
+<p>New York City is divided into five borough’s : Booklyn, Bronx, Manhattan, Staten Island and Queens. My analysis will explore year on year shooting trend. We will examine patterns of shootings by borough’s.</p>
 </div>
 <div id="load-libraries" class="section level2">
 <h2>Load Libraries</h2>
@@ -181,7 +195,7 @@ pre code {
 <pre class="r"><code>library(tidyverse)</code></pre>
 <pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
 <pre><code>## ✓ ggplot2 3.3.3     ✓ purrr   0.3.4
-## ✓ tibble  3.1.1     ✓ dplyr   1.0.6
+## ✓ tibble  3.1.2     ✓ dplyr   1.0.6
 ## ✓ tidyr   1.1.3     ✓ stringr 1.4.0
 ## ✓ readr   1.4.0     ✓ forcats 0.5.1</code></pre>
 <pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
@@ -197,7 +211,7 @@ pre code {
 </div>
 <div id="downloading-data" class="section level2">
 <h2>Downloading Data</h2>
-<p>Download data from <a href="https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD" class="uri">https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD</a> and assign this url to <em>url_in</em> variable. Read the data to <em>raw_data</em> variable using function <em>read_csv(url_in)</em>.</p>
+<p>The data is downloaded from <a href="https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD" class="uri">https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD</a>. This data is a free public data published by New York City agencies.</p>
 <pre class="r"><code>##Get NYC Shooting Incident Data from https://catalog.data.gov/dataset
 url_in &lt;- &quot;https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD&quot;
 raw_data &lt;-read_csv(url_in)</code></pre>

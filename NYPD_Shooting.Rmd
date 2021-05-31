@@ -3,12 +3,22 @@ title: "Analysis of NYPD Shooting Incident Data"
 author: "Giri Kunche"
 date: "5/18/2021"
 output:
-  html_document: default
   pdf_document: default
+  html_document: 
+    toc: yes
 ---
 ## Project Description
 
-This is an R Markdown document for the Analysis of NYC Shooting Incident data. The shooting incident data was downloaded from https://data.cityofnewyork.us 
+Gun violence continues to be one of the major issues in United States. Gun Violence has resulted in tens of thousands of deaths and injuries very year.
+I have done the analysis of shootings in New York City which is one of the largest cities in United States. The analysis is based on the data provided by
+NYC Open Data :https://data.cityofnewyork.us .
+
+The data set contains breakdown of every shooting incident that occured in NYC going back to 2006 through the end of 2020. Each record represents a shooting event
+and includes information about the event like the location, date and time of occurrence, borough where the shooting incident occurred, precinct where the shooting
+incident occurred, juridiction code, location , preperator's age group,sex and race, victim's sex, age and race , longitude and latitude of the location.
+
+New York City is divided into five borough's : Booklyn, Bronx, Manhattan, Staten Island and Queens. My analysis  will explore year on year shooting trend. 
+We will examine patterns of shootings by borough's. 
 
 ## Load Libraries
 
@@ -22,7 +32,8 @@ library(knitr)
 
 ## Downloading Data 
 
-Download data from https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD and assign this url to *url_in* variable.  Read the data to *raw_data* variable using function *read_csv(url_in)*.
+The data is downloaded from https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD. This data is a free public data published by
+New York City agencies. 
 
 
 ```{r raw_data}
@@ -34,7 +45,7 @@ raw_data <-read_csv(url_in)
 ## Data Analysis
 There are total `r ncol(raw_data)` columns and `r nrow(raw_data)` rows in the dataset. Data set consist of columns `r colnames(raw_data)`.
 
-Remove INCIDENT_KEY, X_COORD_CD, Y_COORD_CD, Latitude, Longitude and Lon_Lat columns as they are not needed for data analysis.    
+We will remove INCIDENT_KEY, X_COORD_CD, Y_COORD_CD, Latitude, Longitude and Lon_Lat columns as they are not needed for data analysis.    
 OCCUR_DATA has date of shootings and is in character format. We will convert this column to date format.  
 
 Following is the output of NYC data removing above columns.   
