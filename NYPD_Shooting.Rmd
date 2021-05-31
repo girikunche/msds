@@ -1,0 +1,125 @@
+---
+title: "Analysis of NYPD Shooting Incident Data"
+author: "Giri Kunche"
+date: "5/18/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+## Project Description
+
+This is an R Markdown document for the Analysis of NYC Shooting Incident data. The shooting incident data was downloaded from https://data.cityofnewyork.us 
+
+## Load Libraries
+
+Load tidyverse and lubridate libraries.
+
+```{r setup}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+```
+
+## Downloading Data 
+
+Download data from https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD and assign this url to *url_in* variable.  Read the data to *raw_data* variable using function *read_csv(url_in)*.
+
+
+```{r raw_data}
+##Get NYC Shooting Incident Data from https://catalog.data.gov/dataset
+url_in <- "https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD"
+raw_data <-read_csv(url_in)
+```
+
+## Data Analysis
+There are total `r ncol(raw_data)` columns and `r nrow(raw_data)` rows in the dataset. Data set consist of columns `r colnames(raw_data)`.
+
+Remove INCIDENT_KEY, X_COORD_CD, Y_COORD_CD, Latitude, Longitude and Lon_Lat columns as they are not needed for data analysis.    
+OCCUR_DATA has date of shootings and is in character format. We will convert this column to date format.  
+
+Following is the output of NYC data removing above columns.   
+
+```{r nyc_data}
+df <- raw_data %>% mutate(OCCUR_DATE=mdy(OCCUR_DATE))
+nyc_data <-select(df,-INCIDENT_KEY,-X_COORD_CD,-Y_COORD_CD,-Latitude,-Longitude,-Lon_Lat)
+kable(nyc_data[1:5,])
+```
+
+## Summarizing Data
+We have summarized data into five groups :  
+1. group_by_boro - Groups the data by Boro , Year and Number of Shootings.  
+2. nyc_data_year - Mutates OCCUR_DATE and created new column called Year. Also created column Murder, which is based on STATISTICAL_MURDER_FLAG.  
+3. shootings_by_year - Summarize shootings and murders by Year.   
+4. shootings_by_boro - Summarize shootings by Boro  
+5. murders_by_boro  -  Summarize murders by Boro  
+
+```{r group_nyc_data}
+group_by_boro <- nyc_data %>%group_by(BORO,OCCUR_DATE) %>%summarise(Shootings=n())
+nyc_data_year<-nyc_data%>%mutate(Year=year(OCCUR_DATE),Murder=(STATISTICAL_MURDER_FLAG == TRUE)*1)%>%group_by(Year)
+shootings_by_year<- nyc_data_year %>%group_by(Year) %>%summarise(Murder=sum(Murder),Shootings=n())
+shootings_by_boro<-nyc_data_year %>% group_by(Year,BORO) %>% summarise(Shootings=n())
+murders_by_boro<-nyc_data_year %>% group_by(Year,BORO) %>% summarise(Murder=sum(Murder))
+```
+
+## Visualization
+Lets visualize the shooting and murder data by Boro's. Below bar plot shows the number of shootings in several boroughs. Brooklyn has the highest shootings recorded followed by Bronx. Shooting and Murder trend is shown in next chart. There is decreasing trend in both shootings and murders since 2006. However, there is a spike in both in 2020.
+
+```{r ggplot2,out.width="50%"}
+group_by_boro %>% ggplot(aes(x= BORO, y = Shootings))+geom_bar(stat="identity",fill="steelblue")+theme(legend.position = "bottom")+ labs(title ="Shootings by Boro",y="No of Shootings")
+
+ggplot(shootings_by_year,aes(x=Year)) + geom_bar(stat="identity",aes(y=Shootings),fill="steelblue") + geom_line(aes(y=Murder),size=1.5,color="red") + scale_y_continuous(sec.axis = sec_axis(~./1,name="No of Murders"))+labs(title="Shooting and Murder Trend in NYC")
+```
+
+Further drill down of trend by Boro's shows Murder trend by Boro's as well as comparison of Number of Shootings and Murders since 2006.
+
+
+```{r ggplot3, out.width="50%"}
+ggplot(shootings_by_boro,aes(x=Year))+geom_bar(stat="identity",aes(y=Shootings),fill="steelblue") + geom_line(data=murders_by_boro,aes(x=Year,y=Murder,group=BORO,color=BORO))+scale_y_continuous(sec.axis = sec_axis(~./1,name="No of Murders"))+labs(title="Shooting and Murder Trend by BORO")+theme(legend.direction = "horizontal",legend.position = "bottom")
+
+ggplot(murders_by_boro,aes(x=Year)) + geom_line(aes(y=Murder,group=BORO,color=BORO))+labs(title="Murder Trend by BORO")+theme(legend.direction = "horizontal",legend.position = "bottom")
+```
+
+Below chart shows the number of shootings by Boro's and Victim Age Group. Age group 25-44 are in high proportion compared to other age groups. Most of the victims are males.  
+
+
+```{r ggplot4, out.width="50%"}
+ggplot(nyc_data_year,aes(x=BORO,fill=VIC_AGE_GROUP))+geom_bar(position=position_dodge())+labs(title ="Shootings by Boro and Victim Age Group",y="No of Shootings",fill="Age Group")+theme(legend.direction = "horizontal",legend.position = "bottom")
+
+ggplot(nyc_data_year,aes(x=BORO,fill=VIC_RACE))+geom_bar(position=position_dodge())+labs(title ="Shootings by Boro and Victim Race",y="No of Shootings",fill="Race ")+theme(legend.direction = "horizontal",legend.position = "bottom")
+```
+
+## Modelling
+Lets consider how the number of murders are related to number of shootings. To examine this relationship, we will first summarize shooting and murder data from nyc_data_year.  
+Below is the Shootings and Murders summarized by Year.
+
+```{r summary_data}
+shooting_murder_analysis<-nyc_data_year%>%group_by(Year)%>%summarise(Murder=sum(Murder),Shootings=n())
+kable(shooting_murder_analysis)
+```
+
+Next step is to create a linear regressing model and find the relationship between Murders and Shootings. Following is the output of linear regression model.  
+
+```{r linear_regression}
+mod<-lm(shooting_murder_analysis$Murder ~ shooting_murder_analysis$Shootings, data=shooting_murder_analysis)
+summary(mod)
+```
+
+We will add the murder prediction (Murder_Predicted) from linear model to a new data set murder_pred.
+
+```{r prediction_regression}
+murder_pred<-shooting_murder_analysis%>% mutate(Murder_Predicted=predict(mod))
+kable(murder_pred)
+```
+
+We will now plot between the actual murders vs predicted murders and check how will the model fits.  The blue dots are the actual murders and the red dots are the predicted murders.  
+The model does well when there is cluster of data nearby. Overall the model prediction is closer to the actual values.  
+
+```{r ggplot5,warning=FALSE}
+murder_pred %>% ggplot() + geom_point(aes(x=Shootings, y = Murder),color="blue") + geom_point(aes(x=Shootings,y=Murder_Predicted),color="red")
+```
+
+## Bias
+
+Only Number of Shootings and Murders are considered to predict the murders. We have left out Perperator Race, Sex, Age as well as location of the shooting. These variables may have influence on the
+murder or shootings. 
+
